@@ -92,40 +92,42 @@ class PlaylistSaveSongView(APIView):
         return Response({"detail": message}, status=status.HTTP_200_OK)
 
 
-class SaveAlbumToPlaylistView(APIView):
+class PlaylistSaveAlbumView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, playlist_id, album_id):
         try:
-
             playlist = Playlist.objects.get(playlist_id=playlist_id, created_by=request.user)
         except Playlist.DoesNotExist:
-            return Response(
-                {"error": "Playlist not found or not owned by you"},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({"detail": "Playlist not found."}, status=status.HTTP_404_NOT_FOUND)
 
         try:
             album = Album.objects.get(album_id=album_id)
         except Album.DoesNotExist:
-            return Response(
-                {"error": "Album not found"},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({"detail": "Album not found."}, status=status.HTTP_404_NOT_FOUND)
 
-
-        songs = Song.objects.filter(album_name=album)
-
-
-        if songs.exists():
-            new_songs = [song for song in songs if song not in playlist.songs.all()]
-            playlist.songs.add(*new_songs)
-            message = f"Album '{album.album_name}' with {len(new_songs)} songs saved to playlist."
+        # Toggle album in playlist
+        if album in playlist.albums.all():
+            playlist.albums.remove(album)
+            album_removed = True
         else:
+            playlist.albums.add(album)
+            album_removed = False
 
-            message = f"Album '{album.album_name}' saved to playlist (no songs found)."
 
-        return Response(
-            {"message": message},
-            status=status.HTTP_200_OK
-        )
+        added_count = 0
+        removed_count = 0
+        for song in album.song.all():
+            if song in playlist.songs.all():
+                playlist.songs.remove(song)
+                removed_count += 1
+            else:
+                playlist.songs.add(song)
+                added_count += 1
+
+        if album_removed:
+            message = f"Album '{album.album_name}' removed from playlist."
+        else:
+            message = f"Album '{album.album_name}' added to playlist."
+
+        return Response({"detail": message}, status=status.HTTP_200_OK)

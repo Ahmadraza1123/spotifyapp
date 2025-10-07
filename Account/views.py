@@ -131,7 +131,7 @@ class PasswordResetConfirmView(generics.GenericAPIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        # Verify token validity
+
         if not default_token_generator.check_token(user, token):
             return Response(
                 {"detail": "Invalid or expired token."},
