@@ -1,7 +1,10 @@
 from rest_framework import generics,status,permissions
 from .models import CustomUser,PasswordReset
+from rest_framework.response import Response
 from .serializers import UserRegisterSerializer,LoginSerializer,UserProfileSerializer,ResetPasswordRequestSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated,AllowAny
+from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.mail import send_mail
@@ -12,8 +15,15 @@ from django.contrib.auth.tokens import default_token_generator
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.exceptions import TokenError
+
+
+
+
+
 
 User = get_user_model()
+
 
 class UserRegisterView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
@@ -24,15 +34,14 @@ class UserRegisterView(generics.CreateAPIView):
 
 class UserLoginView(generics.GenericAPIView):
     serializer_class = LoginSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data["user"]
-
-
         token, created = Token.objects.get_or_create(user=user)
+
 
         return Response({
             "id": user.id,
@@ -66,6 +75,9 @@ class UserProfileView(APIView):
     def get(self, request):
         serializer = UserProfileSerializer(request.user)
         return Response(serializer.data)
+
+
+
 
 
 class RequestPasswordReset(generics.GenericAPIView):
