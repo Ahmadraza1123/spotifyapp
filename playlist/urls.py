@@ -11,4 +11,5 @@ urlpatterns = [
     path('<int:playlist_id>/song/<int:song_id>/save/', PlaylistSaveSongView.as_view(), name='playlist-save-song'),
 
     path('<int:playlist_id>/album/<int:album_id>/save/', PlaylistSaveAlbumView.as_view(), name='playlist-save-song'),
+
 ]

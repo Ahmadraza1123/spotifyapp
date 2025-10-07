@@ -30,6 +30,15 @@ ALLOWED_HOSTS = []
 from datetime import timedelta
 
 
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+}
+# Application definition
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -44,6 +53,7 @@ INSTALLED_APPS = [
     'playlist',
     'album',
     'rest_framework.authtoken',
+    'rest_framework_simplejwt.token_blacklist',
 
 ]
 
@@ -65,13 +75,14 @@ EMAIL_HOST_USER = "ahmadismyname1@gmail.com"
 EMAIL_HOST_PASSWORD = "zjze mhec bfbk xllo"
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
+
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
-    ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ],
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.IsAuthenticated",
+    ),
 }
 
 
