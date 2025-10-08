@@ -106,7 +106,7 @@ class PlaylistSaveAlbumView(APIView):
         except Album.DoesNotExist:
             return Response({"detail": "Album not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Toggle album in playlist
+
         if album in playlist.albums.all():
             playlist.albums.remove(album)
             album_removed = True

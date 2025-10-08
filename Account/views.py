@@ -4,20 +4,25 @@ from .serializers import UserRegisterSerializer,LoginSerializer,UserProfileSeria
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.core.mail import send_mail
-from django.conf import settings
 import os
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from .tasks import send_welcome_email,send_password_reset_email_task
 User = get_user_model()
+
 
 class UserRegisterView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserRegisterSerializer
     permission_classes = [AllowAny]
+
+    def perform_create(self, serializer):
+        user = serializer.save()
+
+        send_welcome_email.delay(user.email, user.username)
 
 
 class UserLoginView(generics.GenericAPIView):
@@ -81,29 +86,20 @@ class RequestPasswordReset(generics.GenericAPIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-
         token_generator = PasswordResetTokenGenerator()
         token = token_generator.make_token(user)
-
 
         PasswordReset.objects.create(email=email, token=token)
 
         base_url = os.environ.get("PASSWORD_RESET_BASE_URL", "http://localhost:3000/reset-password")
         reset_url = f"{base_url}/{token}"
 
-        send_mail(
-            subject="Password Reset Request",
-            message=f"Hi {user.username},\n\nUse the link below to reset your password:\n{reset_url}\n\nIf you did not request this, please ignore this email.",
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[email],
-            fail_silently=False,
-        )
+        send_password_reset_email_task.delay(user.username, email, reset_url)
 
         return Response(
             {"success": "We have sent you a link to reset your password"},
             status=status.HTTP_200_OK
         )
-
 
 class PasswordResetConfirmView(generics.GenericAPIView):
     permission_classes = [AllowAny]

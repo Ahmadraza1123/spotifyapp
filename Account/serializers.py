@@ -30,18 +30,14 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             username=validated_data["username"],
             email=validated_data["email"],
             role=validated_data["role"],
-            profile_image=validated_data["profile_image"],
+            profile_image=validated_data.get("profile_image"),
             Bio=validated_data["Bio"],
         )
         user.set_password(validated_data["password"])
         user.save()
-        subject = "Welcome to Spotify App!"
-        message = f"Hello {user.username},\n\nYour account has been created successfully.\nRole: {user.role}\n\nEnjoy!"
-        from_email = settings.DEFAULT_FROM_EMAIL
-        recipient_list = [user.email]
 
-        send_mail(subject, message, from_email, recipient_list)
         return user
+
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
