@@ -6,8 +6,6 @@ from .serializers import AlbumSerializer
 from song.permissions import IsSingerOrReadOnly
 from rest_framework.permissions import IsAuthenticated
 
-
-
 class AlbumViewSet(viewsets.ModelViewSet):
     serializer_class = AlbumSerializer
     permission_classes = [IsAuthenticated, IsSingerOrReadOnly]
@@ -71,13 +69,11 @@ class AlbumDislikeView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-
         if user.role == "singer":
             return Response(
                 {"detail": "Singers cannot dislike albums"},
                 status=status.HTTP_403_FORBIDDEN
             )
-
 
         if user in album.Unlike.all():
             album.Unlike.remove(user)
@@ -92,9 +88,6 @@ class AlbumDislikeView(APIView):
             "like_count": album.Like.count(),
             "unlike_count": album.Unlike.count()
         }, status=status.HTTP_200_OK)
-
-
-
 
 class AlbumSaveLibraryView(APIView):
     permission_classes = [IsAuthenticated]

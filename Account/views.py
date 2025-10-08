@@ -12,15 +12,12 @@ from django.contrib.auth.tokens import default_token_generator
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 User = get_user_model()
-
 
 class UserRegisterView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserRegisterSerializer
     permission_classes = [AllowAny]
-
 
 
 class UserLoginView(generics.GenericAPIView):
@@ -66,10 +63,6 @@ class UserProfileView(APIView):
     def get(self, request):
         serializer = UserProfileSerializer(request.user)
         return Response(serializer.data)
-
-
-
-
 
 class RequestPasswordReset(generics.GenericAPIView):
     permission_classes = [AllowAny]
@@ -157,25 +150,32 @@ class FollowUserView(APIView):
     def post(self, request, user_id):
         target_user = get_object_or_404(CustomUser, id=user_id)
 
+
         if target_user == request.user:
             return Response({"error": "You cannot follow yourself"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-        if request.user.role != "normal" or target_user.role != "singer":
-            return Response({"error": "Only normal users can follow singers"}, status=status.HTTP_403_FORBIDDEN)
+        if request.user.role != "normal":
+            return Response({"error": "Only normal users can follow singer"}, status=status.HTTP_403_FORBIDDEN)
 
-        if target_user in request.user.following.all():
-            return Response({"error": "Already following this user"}, status=status.HTTP_400_BAD_REQUEST)
 
-        request.user.following.add(target_user)
-        request.user.unfollowed.remove(target_user)
+        if target_user not in request.user.follow.all():
+            request.user.follow.add(target_user)
+            request.user.unfollow.remove(target_user)
+            return Response({
+                "message": f"You are now following {target_user.username}",
+                "follow_count": request.user.follow.count(),
+                "unfollow_count": request.user.unfollow.count()
+            }, status=status.HTTP_200_OK)
 
-        return Response({
-            "message": f"You are now following {target_user.username}",
-            "following_count": request.user.following.count(),
-            "followers_count": target_user.followers.count(),
-        }, status=status.HTTP_200_OK)
 
+        else:
+            request.user.follow.remove(target_user)
+            return Response({
+                "message": f"You have cancelled following {target_user.username}",
+                "follow_count": request.user.follow.count(),
+                "unfollow_count": request.user.unfollow.count()
+            }, status=status.HTTP_200_OK)
 
 class UnfollowUserView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -183,20 +183,28 @@ class UnfollowUserView(APIView):
     def post(self, request, user_id):
         target_user = get_object_or_404(CustomUser, id=user_id)
 
+
         if target_user == request.user:
             return Response({"error": "You cannot unfollow yourself"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if request.user.role != "normal" or target_user.role != "singer":
-            return Response({"error": "Only normal users can unfollow singers"}, status=status.HTTP_403_FORBIDDEN)
 
-        if target_user in request.user.following.all():
-            return Response({"error": "Already unfollowing this user"}, status=status.HTTP_400_BAD_REQUEST)
+        if request.user.role != "normal":
+            return Response({"error": "Only normal users can unfollow singer"}, status=status.HTTP_403_FORBIDDEN)
 
-        request.user.following.add(target_user)
-        request.user.unfollowed.remove(target_user)
+        if target_user not in request.user.unfollow.all():
+            request.user.unfollow.add(target_user)
+            request.user.follow.remove(target_user)
+            return Response({
+                "message": f"You have unfollowed {target_user.username}",
+                "follow_count": request.user.follow.count(),
+                "unfollow_count": request.user.unfollow.count()
+            }, status=status.HTTP_200_OK)
 
-        return Response({
-            "message": f"You are now unfollowing {target_user.username}",
-            "following_count": request.user.following.count(),
-            "followers_count": target_user.followers.count(),
-        }, status=status.HTTP_200_OK)
+
+        else:
+            request.user.unfollow.remove(target_user)
+            return Response({
+                "message": f"You have cancelled unfollow {target_user.username}",
+                "follow_count": request.user.follow.count(),
+                "unfollow_count": request.user.unfollow.count()
+            }, status=status.HTTP_200_OK)

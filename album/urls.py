@@ -1,11 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import (
-    AlbumViewSet,
-    AlbumLikeView,
-    AlbumDislikeView,
-    AlbumSaveLibraryView,
-)
+from .views import (AlbumViewSet,AlbumLikeView,AlbumDislikeView,AlbumSaveLibraryView,)
 
 router = DefaultRouter()
 router.register(r'crud', AlbumViewSet, basename='album')
