@@ -12,7 +12,7 @@ class SongSerializer(serializers.ModelSerializer):
     album_singer_id = serializers.IntegerField(source="album_name.singer.id", read_only=True)
     album_singer_name = serializers.CharField(source="album_name.singer.username", read_only=True)
     input_album_name = serializers.CharField(
-        write_only=True, required=False, allow_blank=True, allow_null=True
+        write_only=True, allow_blank=True, allow_null=True
     )
 
     class Meta:
