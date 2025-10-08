@@ -16,9 +16,4 @@ class Playlist(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=['playlist_name', 'created_by'],
-                name='unique_playlist_per_user'
-            )
-        ]
+        constraints = [models.UniqueConstraint( fields=['playlist_name', 'created_by'],name='unique_playlist_per_user')]

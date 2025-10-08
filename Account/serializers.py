@@ -10,8 +10,7 @@ User = get_user_model()
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(write_only=True)
-    profile_image = serializers.ImageField(required=False, allow_null=True)
-
+    profile_image = serializers.ImageField(required=False, allow_null=False)
 
     class Meta:
         model = CustomUser
@@ -69,13 +68,13 @@ class UserProfileSerializer(serializers.ModelSerializer):
     total_songs = serializers.SerializerMethodField()
     album_song = serializers.SerializerMethodField()
     without_album_song = serializers.SerializerMethodField()
-    Follow_count = serializers.SerializerMethodField()
-    Unfollow_count = serializers.SerializerMethodField()
+    follow_count = serializers.SerializerMethodField()
+    unfollow_count = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = [
-            'id', 'email', 'profile_image','total_albums', 'album_song','without_album_song', 'total_songs',"Follow_count","Unfollow_count",]
+            'id', 'email', 'profile_image','role','total_albums', 'album_song','without_album_song', 'total_songs',"follow_count","unfollow_count",]
 
     def get_total_albums(self, obj):
         return Album.objects.filter(singer=obj).count()
@@ -89,14 +88,11 @@ class UserProfileSerializer(serializers.ModelSerializer):
     def get_total_songs(self, obj):
         return Song.objects.filter(owner=obj).count()
 
-    def get_Follow_count(self, obj):
-        return obj.followers.count()
+    def get_follow_count(self, obj):
+        return obj.follow_self.count()
 
-    def get_Unfollow_count(self, obj):
-        return obj.following.count()
-
-
-
+    def get_unfollow_count(self, obj):
+        return obj.unfollow_self.count()
 
 class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField()

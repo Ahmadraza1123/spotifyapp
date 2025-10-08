@@ -5,7 +5,6 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class Song(models.Model):
-
     song_id = models.AutoField(primary_key=True)
     song_name = models.CharField(unique=True,max_length=100)
     album_name = models.ForeignKey('album.Album',on_delete=models.SET_NULL,null=True, blank=True,related_name="song")

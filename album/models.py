@@ -21,11 +21,6 @@ class Album(models.Model):
         return self.Unlike.count()
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=['album_name', 'singer'],
-                name='unique_album_per_singer'
-            )
-        ]
+        constraints = [models.UniqueConstraint(fields=['album_name', 'singer'],name='unique_album_per_singer')]
 
 

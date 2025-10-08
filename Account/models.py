@@ -11,9 +11,8 @@ class CustomUser(AbstractUser):
     profile_image = models.ImageField(upload_to="covers", blank=True)
     Bio = models.CharField(max_length=100)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
-    following = models.ManyToManyField("self",symmetrical=False,related_name="followers",blank=True)
-    unfollowed = models.ManyToManyField("self",symmetrical=False,related_name="unfollowed_by",blank=True)
-
+    follow = models.ManyToManyField("self",symmetrical=False,related_name="follow_self",blank=True)
+    unfollow = models.ManyToManyField("self",symmetrical=False,related_name="unfollow_self",blank=True)
 
 
 class PasswordReset(models.Model):
